@@ -15,14 +15,13 @@
         button:hover { background-color: #2563eb; }
         button:disabled { background-color: #475569; cursor: not-allowed; }
         
-        /* Box Hasil Sukses & Kolom Share Link */
-        #result { margin-top: 25px; display: none; padding: 20px; background: #064e3b; border-radius: 8px; border: 1px solid #059669; text-align: left; }
+        /* Box Hasil & Share Link */
+        #result { margin-top: 25px; padding: 20px; background: #1e293b; border-radius: 8px; border: 1px solid #334155; text-align: left; }
         .share-box { margin-top: 15px; }
         .share-input-group { display: flex; margin-top: 5px; gap: 5px; }
-        .share-input-group input { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #111827; color: #10b981; font-family: monospace; font-size: 13px; }
-        .copy-btn { width: auto; margin: 0; padding: 10px 15px; background: #10b981; font-size: 14px; border-radius: 6px; }
-        .copy-btn:hover { background: #059669; }
-        .download-btn { display: block; text-align: center; margin-top: 15px; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .share-input-group input { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #0f172a; color: #64748b; font-family: monospace; font-size: 13px; width: 100%; box-sizing: border-box; }
+        .copy-btn { width: auto; margin: 0; padding: 10px 15px; background: #475569; font-size: 14px; border-radius: 6px; color: #94a3b8; cursor: not-allowed; }
+        .download-btn { display: none; text-align: center; margin-top: 15px; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
         .download-btn:hover { background: #1d4ed8; }
     </style>
 </head>
@@ -36,7 +35,7 @@
             <input type="url" id="url" placeholder="https://website-kamu.com" required>
             
             <label for="appName">NAMA APLIKASI</label>
-            <input type="text" id="appName" placeholder="Contoh: Smart calendar" required>
+            <input type="text" id="appName" placeholder="Contoh: Tokoku" required>
             
             <label class="file-upload" id="uploadLabel">
                 📥 Klik untuk upload Logo (.PNG / .JPG)
@@ -48,14 +47,14 @@
         </form>
 
         <div id="result">
-            <span style="font-size: 18px;">🚀 <b>Sukses!</b></span>
-            <p style="margin: 5px 0 0 0; font-size: 14px; color: #a7f3d0;">Sistem sedang merakit APK-mu (butuh waktu sekitar 3 menit).</p>
+            <span id="statusTitle" style="font-size: 16px; color: #94a3b8;">📋 <b>Status APK: Belum Dibuat</b></span>
+            <p id="statusDesc" style="margin: 5px 0 0 0; font-size: 13px; color: #64748b;">Silakan isi formulir di atas lalu klik tombol Generate.</p>
             
             <div class="share-box">
-                <label style="color: #a7f3d0; margin-top: 0;">🔗 Link untuk Dibagikan (Share):</label>
+                <label style="color: #cbd5e1; margin-top: 0; font-size: 13px;">🔗 Link untuk Dibagikan (Share):</label>
                 <div class="share-input-group">
-                    <input type="text" id="shareLinkUrl" readonly>
-                    <button type="button" class="copy-btn" onclick="copyLink()">Salin</button>
+                    <input type="text" id="shareLinkUrl" placeholder="Link otomatis muncul di sini setelah sukses..." readonly>
+                    <button type="button" id="copyBtn" class="copy-btn" onclick="copyLink()" disabled>Salin</button>
                 </div>
             </div>
 
@@ -64,7 +63,6 @@
     </div>
 
     <script>
-        // Memunculkan nama file ketika logo dipilih
         document.getElementById('logo').addEventListener('change', function(e) {
             const fileName = e.target.files[0]?.name;
             if(fileName) document.getElementById('fileName').innerText = 'Logo terpilih: ' + fileName;
@@ -94,10 +92,28 @@
                     
                     const data = await res.json();
                     if (data.success) {
-                        // Memunculkan kotak hasil beserta linknya
-                        document.getElementById('result').style.display = 'block';
-                        document.getElementById('downloadLink').href = data.releaseUrl;
-                        document.getElementById('shareLinkUrl').value = data.releaseUrl; // Mengisi kolom share link
+                        // Ubah tampilan menjadi Hijau Sukses
+                        document.getElementById('result').style.background = '#064e3b';
+                        document.getElementById('result').style.borderColor = '#059669';
+                        document.getElementById('statusTitle').innerHTML = '🚀 <b style="color:white;">Sukses Merakit!</b>';
+                        document.getElementById('statusDesc').innerText = 'Sistem sedang merakit APK-mu (butuh waktu sekitar 3 menit).';
+                        document.getElementById('statusDesc').style.color = '#a7f3d0';
+                        
+                        // Isi Link Share & Aktifkan Tombol Salin
+                        const shareInput = document.getElementById('shareLinkUrl');
+                        shareInput.value = data.releaseUrl;
+                        shareInput.style.color = '#10b981';
+                        
+                        const copyBtn = document.getElementById('copyBtn');
+                        copyBtn.disabled = false;
+                        copyBtn.style.background = '#10b981';
+                        copyBtn.style.color = 'white';
+                        copyBtn.style.cursor = 'pointer';
+                        
+                        // Tampilkan tombol download utama
+                        const dlLink = document.getElementById('downloadLink');
+                        dlLink.href = data.releaseUrl;
+                        dlLink.style.display = 'block';
                         
                         btn.innerText = 'Generate & Kirim APK';
                         btn.disabled = false;
@@ -107,20 +123,19 @@
                         btn.disabled = false;
                     }
                 } catch (err) {
-                    alert('Gagal menghubungi server. Pastikan Env Variables di Vercel sudah diisi.');
+                    alert('Gagal menghubungi server. Periksa kembali Environment Variables di Vercel.');
                     btn.innerText = 'Coba Lagi';
                     btn.disabled = false;
                 }
             };
         });
 
-        // Fungsi tombol salin link
         function copyLink() {
             const copyText = document.getElementById("shareLinkUrl");
             copyText.select();
             copyText.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(copyText.value);
-            alert("Link download berhasil disalin! Siap dibagikan.");
+            alert("Link download berhasil disalin! Siap dibagikan ke WhatsApp.");
         }
     </script>
 </body>
