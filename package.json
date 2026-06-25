@@ -1,0 +1,5 @@
+{
+  "name": "web-to-apk-direct",
+  "version": "2.0.0",
+  "main": "api/generate.js"
+}
