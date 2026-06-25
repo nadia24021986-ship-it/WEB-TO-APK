@@ -1,9 +1,8 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Hanya menerima POST');
 
-  const { url, appName } = req.body;
+  const { url, appName, logo } = req.body;
   
-  // Mengambil kunci rahasia dari Vercel
   const GITHUB_PAT = process.env.GITHUB_PAT;
   const GITHUB_USER = process.env.GITHUB_USER; 
   const GITHUB_REPO = process.env.GITHUB_REPO; 
@@ -14,17 +13,20 @@ export default async function handler(req, res) {
       headers: {
         'Authorization': `token ${GITHUB_PAT}`,
         'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': 'WebToAPK-App' // Wajib ada agar tidak ditolak GitHub
       },
       body: JSON.stringify({
         event_type: 'build-apk',
-        client_payload: { url, appName }
+        client_payload: { url, appName, logo }
       })
     });
 
-    if (!response.ok) throw new Error('Gagal menghubungi GitHub');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`GitHub merespon dengan status ${response.status}: ${errorText}`);
+    }
     
-    // Memberikan link download langsung ke frontend
     const releaseUrl = `https://github.com/${GITHUB_USER}/${GITHUB_REPO}/releases`;
     res.status(200).json({ success: true, releaseUrl: releaseUrl });
     
