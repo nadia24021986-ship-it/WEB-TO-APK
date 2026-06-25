@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web to APK Generator</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background-color: #1e293b; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); width: 100%; max-width: 400px; text-align: center; }
         input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #334155; color: white; }
+        .file-upload { border: 2px dashed #475569; padding: 20px; border-radius: 8px; margin: 10px 0; cursor: pointer; color: #94a3b8; }
+        .file-upload input { display: none; }
         button { width: 100%; padding: 14px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #2563eb; }
+        button:disabled { background-color: #475569; cursor: not-allowed; }
         #result { margin-top: 20px; display: none; padding: 15px; background: #064e3b; border-radius: 8px; }
         .download-btn { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
     </style>
@@ -22,6 +25,13 @@
         <form id="apkForm">
             <input type="url" id="url" placeholder="https://website-kamu.com" required>
             <input type="text" id="appName" placeholder="Nama Aplikasi (Contoh: Tokoku)" required>
+            
+            <label class="file-upload" id="uploadLabel">
+                📥 Klik untuk upload Logo (.PNG / .JPG)
+                <input type="file" id="logo" accept="image/png, image/jpeg" required>
+            </label>
+            <small id="fileName" style="color: #10b981; display: block; margin-bottom: 10px;"></small>
+
             <button type="submit" id="submitBtn">Generate APK Sekarang</button>
         </form>
 
@@ -32,6 +42,12 @@
     </div>
 
     <script>
+        // Memunculkan nama file saat logo dipilih
+        document.getElementById('logo').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            if(fileName) document.getElementById('fileName').innerText = 'Logo terpilih: ' + fileName;
+        });
+
         document.getElementById('apkForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -40,30 +56,38 @@
 
             const url = document.getElementById('url').value;
             const appName = document.getElementById('appName').value;
+            const logoFile = document.getElementById('logo').files[0];
 
-            try {
-                const res = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url, appName })
-                });
-                
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('result').style.display = 'block';
-                    document.getElementById('downloadLink').href = data.releaseUrl;
-                    btn.innerText = 'Generate APK Sekarang';
-                    btn.disabled = false;
-                } else {
-                    alert('Terjadi kesalahan: ' + data.error);
+            // Mengubah gambar menjadi teks data agar bisa dikirim ke Vercel/GitHub
+            const reader = new FileReader();
+            reader.readAsDataURL(logoFile);
+            reader.onloadend = async () => {
+                const logoBase64 = reader.result;
+
+                try {
+                    const res = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url, appName, logo: logoBase64 })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('result').style.display = 'block';
+                        document.getElementById('downloadLink').href = data.releaseUrl;
+                        btn.innerText = 'Generate APK Sekarang';
+                        btn.disabled = false;
+                    } else {
+                        alert('Terjadi kesalahan: ' + data.error);
+                        btn.innerText = 'Coba Lagi';
+                        btn.disabled = false;
+                    }
+                } catch (err) {
+                    alert('Gagal menghubungi server.');
                     btn.innerText = 'Coba Lagi';
                     btn.disabled = false;
                 }
-            } catch (err) {
-                alert('Gagal menghubungi server.');
-                btn.innerText = 'Coba Lagi';
-                btn.disabled = false;
-            }
+            };
         });
     </script>
 </body>
