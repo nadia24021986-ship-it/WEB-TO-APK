@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web to APK Generator</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background-color: #1e293b; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); width: 100%; max-width: 400px; text-align: center; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #334155; color: white; }
+        button { width: 100%; padding: 14px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #2563eb; }
+        #result { margin-top: 20px; display: none; padding: 15px; background: #064e3b; border-radius: 8px; }
+        .download-btn { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Web to APK</h2>
+        <p>Ubah website menjadi aplikasi tanpa ribet</p>
+        
+        <form id="apkForm">
+            <input type="url" id="url" placeholder="https://website-kamu.com" required>
+            <input type="text" id="appName" placeholder="Nama Aplikasi (Contoh: Tokoku)" required>
+            <button type="submit" id="submitBtn">Generate APK Sekarang</button>
+        </form>
+
+        <div id="result">
+            <p>🚀 <b>Sukses!</b> Sistem sedang merakit APK-mu (butuh waktu 3-5 menit).</p>
+            <a href="#" id="downloadLink" class="download-btn" target="_blank">Cek & Download APK di Sini</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('apkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = 'Memproses...';
+            btn.disabled = true;
+
+            const url = document.getElementById('url').value;
+            const appName = document.getElementById('appName').value;
+
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, appName })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('downloadLink').href = data.releaseUrl;
+                    btn.innerText = 'Generate APK Sekarang';
+                    btn.disabled = false;
+                } else {
+                    alert('Terjadi kesalahan: ' + data.error);
+                    btn.innerText = 'Coba Lagi';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                alert('Gagal menghubungi server.');
+                btn.innerText = 'Coba Lagi';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
