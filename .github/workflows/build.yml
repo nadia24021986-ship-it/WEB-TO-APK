@@ -1,0 +1,70 @@
+```yaml
+name: Build and Email APK
+
+on:
+  repository_dispatch:
+    types: [build_apk]
+
+jobs:
+  build:
+    name: Proses Perakitan APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Jalankan Generator Android & Logo
+        env:
+          APP_NAME: ${{ github.event.client_payload.app_name }}
+          APP_URL: ${{ github.event.client_payload.url }}
+          APP_LOGO: ${{ github.event.client_payload.logo }}
+        run: |
+          python scripts/build_prep.py
+
+      # Menggunakan Gradle global v8.5 dari system runner untuk merakit secara aman & cepat
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.5
+
+      - name: Jalankan Kompilasi APK
+        working-directory: ./android-template
+        run: |
+          gradle assembleDebug
+
+      - name: Kirim File APK ke Email Pengguna
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Aplikasi APK '${{ github.event.client_payload.app_name }}' Anda Telah Selesai!"
+          to: ${{ github.event.client_payload.email }}
+          from: "Web-to-APK Auto Generator <${{ secrets.SMTP_USER }}>"
+          body: |
+            Halo!
+            
+            Aplikasi Android untuk website berikut telah selesai dirakit:
+            - Target URL: ${{ github.event.client_payload.url }}
+            - Nama Aplikasi: ${{ github.event.client_payload.app_name }}
+            
+            File APK telah kami lampirkan pada email ini dan siap diinstal langsung di HP Android Anda.
+            
+            Terima kasih!
+          attachments: android-template/app/build/outputs/apk/debug/app-debug.apk
+
+```
