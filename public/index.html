@@ -5,44 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web to APK Generator</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background-color: #1e293b; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); width: 100%; max-width: 400px; text-align: center; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #334155; color: white; }
-        .file-upload { border: 2px dashed #475569; padding: 20px; border-radius: 8px; margin: 10px 0; cursor: pointer; color: #94a3b8; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .card { background-color: #1e293b; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); width: 100%; max-width: 450px; text-align: center; }
+        label { display: block; text-align: left; font-weight: bold; margin-top: 15px; margin-bottom: 5px; font-size: 14px; color: #cbd5e1; }
+        input[type="url"], input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: none; background: #334155; color: white; box-sizing: border-box; }
+        .file-upload { display: block; border: 2px dashed #475569; padding: 20px; border-radius: 8px; margin: 15px 0 5px 0; cursor: pointer; color: #94a3b8; text-align: center; background: #1e293b; }
         .file-upload input { display: none; }
-        button { width: 100%; padding: 14px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button { width: 100%; padding: 14px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
         button:hover { background-color: #2563eb; }
         button:disabled { background-color: #475569; cursor: not-allowed; }
-        #result { margin-top: 20px; display: none; padding: 15px; background: #064e3b; border-radius: 8px; }
-        .download-btn { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        
+        /* Box Hasil Sukses & Kolom Share Link */
+        #result { margin-top: 25px; display: none; padding: 20px; background: #064e3b; border-radius: 8px; border: 1px solid #059669; text-align: left; }
+        .share-box { margin-top: 15px; }
+        .share-input-group { display: flex; margin-top: 5px; gap: 5px; }
+        .share-input-group input { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #111827; color: #10b981; font-family: monospace; font-size: 13px; }
+        .copy-btn { width: auto; margin: 0; padding: 10px 15px; background: #10b981; font-size: 14px; border-radius: 6px; }
+        .copy-btn:hover { background: #059669; }
+        .download-btn { display: block; text-align: center; margin-top: 15px; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .download-btn:hover { background: #1d4ed8; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>Web to APK</h2>
-        <p>Ubah website menjadi aplikasi tanpa ribet</p>
+        <h2 style="margin-top:0; color:#3b82f6;">Web to APK</h2>
+        <p style="color:#94a3b8; margin-bottom:20px;">Ubah website menjadi aplikasi Android dalam sekejap</p>
         
         <form id="apkForm">
+            <label for="url">URL WEBSITE</label>
             <input type="url" id="url" placeholder="https://website-kamu.com" required>
-            <input type="text" id="appName" placeholder="Nama Aplikasi (Contoh: Tokoku)" required>
+            
+            <label for="appName">NAMA APLIKASI</label>
+            <input type="text" id="appName" placeholder="Contoh: Smart calendar" required>
             
             <label class="file-upload" id="uploadLabel">
                 📥 Klik untuk upload Logo (.PNG / .JPG)
                 <input type="file" id="logo" accept="image/png, image/jpeg" required>
             </label>
-            <small id="fileName" style="color: #10b981; display: block; margin-bottom: 10px;"></small>
+            <small id="fileName" style="color: #10b981; display: block; text-align: left; margin-top: 5px;"></small>
 
-            <button type="submit" id="submitBtn">Generate APK Sekarang</button>
+            <button type="submit" id="submitBtn">Generate & Kirim APK</button>
         </form>
 
         <div id="result">
-            <p>🚀 <b>Sukses!</b> Sistem sedang merakit APK-mu (butuh waktu 3-5 menit).</p>
-            <a href="#" id="downloadLink" class="download-btn" target="_blank">Cek & Download APK di Sini</a>
+            <span style="font-size: 18px;">🚀 <b>Sukses!</b></span>
+            <p style="margin: 5px 0 0 0; font-size: 14px; color: #a7f3d0;">Sistem sedang merakit APK-mu (butuh waktu sekitar 3 menit).</p>
+            
+            <div class="share-box">
+                <label style="color: #a7f3d0; margin-top: 0;">🔗 Link untuk Dibagikan (Share):</label>
+                <div class="share-input-group">
+                    <input type="text" id="shareLinkUrl" readonly>
+                    <button type="button" class="copy-btn" onclick="copyLink()">Salin</button>
+                </div>
+            </div>
+
+            <a href="#" id="downloadLink" class="download-btn" target="_blank">Buka Halaman Download APK</a>
         </div>
     </div>
 
     <script>
-        // Memunculkan nama file saat logo dipilih
+        // Memunculkan nama file ketika logo dipilih
         document.getElementById('logo').addEventListener('change', function(e) {
             const fileName = e.target.files[0]?.name;
             if(fileName) document.getElementById('fileName').innerText = 'Logo terpilih: ' + fileName;
@@ -58,7 +80,6 @@
             const appName = document.getElementById('appName').value;
             const logoFile = document.getElementById('logo').files[0];
 
-            // Mengubah gambar menjadi teks data agar bisa dikirim ke Vercel/GitHub
             const reader = new FileReader();
             reader.readAsDataURL(logoFile);
             reader.onloadend = async () => {
@@ -73,9 +94,12 @@
                     
                     const data = await res.json();
                     if (data.success) {
+                        // Memunculkan kotak hasil beserta linknya
                         document.getElementById('result').style.display = 'block';
                         document.getElementById('downloadLink').href = data.releaseUrl;
-                        btn.innerText = 'Generate APK Sekarang';
+                        document.getElementById('shareLinkUrl').value = data.releaseUrl; // Mengisi kolom share link
+                        
+                        btn.innerText = 'Generate & Kirim APK';
                         btn.disabled = false;
                     } else {
                         alert('Terjadi kesalahan: ' + data.error);
@@ -83,12 +107,21 @@
                         btn.disabled = false;
                     }
                 } catch (err) {
-                    alert('Gagal menghubungi server.');
+                    alert('Gagal menghubungi server. Pastikan Env Variables di Vercel sudah diisi.');
                     btn.innerText = 'Coba Lagi';
                     btn.disabled = false;
                 }
             };
         });
+
+        // Fungsi tombol salin link
+        function copyLink() {
+            const copyText = document.getElementById("shareLinkUrl");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+            alert("Link download berhasil disalin! Siap dibagikan.");
+        }
     </script>
 </body>
 </html>
